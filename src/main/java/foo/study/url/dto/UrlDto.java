@@ -1,14 +1,12 @@
 package foo.study.url.dto;
 
-import foo.study.url.dto.ValidationGroups.NotEmptyGroup;
+import foo.study.url.domain.Url;
 import java.util.List;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class UrlDto {
@@ -22,7 +20,14 @@ public class UrlDto {
             @NotBlank(message = "Link 필드는 필수입니다.", groups = ValidationGroups.NotEmptyGroup.class)
             @Pattern(regexp="^((http(s?))\\:\\/\\/)([0-9a-zA-Z\\-]+\\.)+[a-zA-Z]{2,6}(\\:[0-9]+)?(\\/\\S*)?$",
                 message = "Link 형식이 유효하지 않습니다.", groups = ValidationGroups.PatternCheckGroup.class)
-            private String url;
+            private String originalUrl;
+        }
+
+        public static Url toEntity(Save dto){
+            return Url.builder()
+                .originalUrl(dto.getOriginalUrl())
+                .shortenUrl("")
+                .build();
         }
     }
 
