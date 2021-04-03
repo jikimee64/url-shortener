@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 public interface UrlRepository extends JpaRepository<Url, Long>{
     @Query("select su.url from ShortUrl su join su.url where su.shortenUrl=:shortenUrl")
-    Optional<Url> findOriginalUrlByShortenUrl(@Param("shortenUrl") ShortenUrl shortenUrl);
+    Optional<Url> findOriginalUrlByShortenUrl(@Param("shortenUrl") String shortenUrl);
 
     Optional<Url> findByOriginalUrl(String originalUrl);
 }

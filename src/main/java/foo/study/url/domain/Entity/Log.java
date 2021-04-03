@@ -31,14 +31,13 @@ public class Log {
     @Column(name = "original_url")
     private String originalUrl;
 
-    @Embedded
-    private ShortenUrl shortenUrl;
+    private String shortenUrl;
 
     @Column(name = "request_time")
     private String requestTime;
 
     @Builder
-    public Log(ReqInfo reqInfo, String originalUrl, ShortenUrl shortenUrl, String requestTime) {
+    public Log(ReqInfo reqInfo, String originalUrl, String shortenUrl, String requestTime) {
         this.reqInfo = reqInfo;
         this.originalUrl = originalUrl;
         this.shortenUrl = shortenUrl;

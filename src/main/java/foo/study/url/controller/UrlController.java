@@ -1,6 +1,5 @@
 package foo.study.url.controller;
 
-import foo.study.url.domain.Entity.Log;
 import foo.study.url.dto.UrlDto;
 import foo.study.url.dto.UrlDto.Request;
 import foo.study.url.dto.UrlDto.Response;
@@ -9,11 +8,8 @@ import foo.study.url.dto.UrlDto.Response.FindOne;
 import foo.study.url.dto.UrlDto.Response.Select;
 import foo.study.url.dto.ValidationSequence;
 import foo.study.url.service.UrlService;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

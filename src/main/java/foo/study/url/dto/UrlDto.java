@@ -52,7 +52,7 @@ public class UrlDto {
                     .requestTime(log.getRequestTime())
                     .accessIp(log.getReqInfo().getAccessIp())
                     .originalUrl(log.getOriginalUrl())
-                    .shortenUrl(log.getShortenUrl().getShortenUrl())
+                    .shortenUrl(log.getShortenUrl())
                     .build();
             }
         }

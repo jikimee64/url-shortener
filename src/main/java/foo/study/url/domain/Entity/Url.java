@@ -33,7 +33,7 @@ public class Url {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "original_url")
+    @Column(name = "original_url",unique = true)
     private String originalUrl;
 
     @OneToMany(mappedBy = "url", cascade = CascadeType.ALL)

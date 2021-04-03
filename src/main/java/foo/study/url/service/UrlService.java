@@ -38,8 +38,15 @@ public class UrlService {
 
         final ShortenUrl shortenUrl = new ShortenUrl(randomSupplier.get());
 
-        ShortUrl entity = new ShortUrl(shortenUrl);
+        //생성된 url 중복 검사
+        checkDuplicate(shortenUrl, url);
 
+        ShortUrl entity = new ShortUrl(shortenUrl.get());
+
+        /**
+         * url이 존재하면 short_url 테이블에만 insert
+         * url이 존재하지 않으면 url, short_url 테이블에 insert
+         */
         urlRepository.findByOriginalUrl(url.getOriginalUrl())
             .ifPresentOrElse(
                 value -> {
@@ -54,6 +61,26 @@ public class UrlService {
         return shortenUrl.get();
     }
 
+    public String findOriginalUrlByShortedUrl(String shortedUrl) {
+        Url url = urlRepository.findOriginalUrlByShortenUrl(shortedUrl)
+            .orElseThrow(() -> new UrlNotFoundException("저장된 원본 URL이 없습니다."));
+
+        // 로깅
+        ReqInfo reqInfo = new ReqInfo();
+        reqInfo.setAccessIp();
+
+        Log log = Log.builder()
+            .reqInfo(reqInfo)
+            .originalUrl(url.getOriginalUrl())
+            .shortenUrl(shortedUrl)
+            .requestTime(new DateType().getDateTime())
+            .build();
+
+        logRepository.save(log);
+
+        return url.getOriginalUrl();
+    }
+
     public List<Select> findAll() {
         List<Log> entity = logRepository.findAll();
 
@@ -64,27 +91,14 @@ public class UrlService {
         return collect;
     }
 
-    public String findOriginalUrlByShortedUrl(String shortedUrl) {
-        ShortenUrl shortenUrl = new ShortenUrl(shortedUrl);
-        shortenUrl.filter(shortedUrl);
-
-        Url url = urlRepository.findOriginalUrlByShortenUrl(shortenUrl)
-            .orElseThrow(() -> new UrlNotFoundException("저장된 원본 URL이 없습니다."));
-
-        //로깅
-        ReqInfo reqInfo = new ReqInfo();
-        reqInfo.setAccessIp();
-
-        Log log = Log.builder()
-            .reqInfo(reqInfo)
-            .originalUrl(url.getOriginalUrl())
-            .shortenUrl(shortenUrl)
-            .requestTime(new DateType().getDateTime())
-            .build();
-
-        logRepository.save(log);
-
-        return url.getOriginalUrl();
+    /**
+     * 단축된 URL이 중복이라면 save함수 재호출
+     */
+    private void checkDuplicate(ShortenUrl shortenUrl, Url url){
+        shortUrlRepository.findShortUrlByShortenUrl(shortenUrl.get())
+            .ifPresent(entity -> {
+                this.save(url);
+            });
     }
 
 }

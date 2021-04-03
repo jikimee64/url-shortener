@@ -1,10 +1,8 @@
 package foo.study.url.domain;
 
-import foo.study.url.utils.RandomSupplier;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +26,8 @@ public class ShortenUrl {
         return BASE_URL + this.shortenUrl;
     }
 
-    public void filter(String shortenUrl){
-        log.info("url filter {}", shortenUrl.substring(15));
-        this.shortenUrl = shortenUrl.substring(15);
-    }
+//    public void filter(String shortenUrl){
+//        log.info("url filter {}", shortenUrl.substring(15));
+//        this.shortenUrl = shortenUrl.substring(15);
+//    }
 }

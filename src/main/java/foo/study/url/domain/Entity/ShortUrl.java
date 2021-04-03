@@ -28,14 +28,15 @@ public class ShortUrl {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
-    @Embedded
-    private ShortenUrl shortenUrl;
+//    @Embedded
+//    private ShortenUrl shortenUrl;
+    private String shortenUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "url_id")
     private Url url;
 
-    public ShortUrl(ShortenUrl shortenUrl) {
+    public ShortUrl(String shortenUrl) {
         this.shortenUrl = shortenUrl;
     }
 
