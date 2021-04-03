@@ -1,16 +1,23 @@
 package foo.study.url.controller;
 
+import foo.study.url.domain.Entity.Log;
 import foo.study.url.dto.UrlDto;
 import foo.study.url.dto.UrlDto.Request;
 import foo.study.url.dto.UrlDto.Response;
 import foo.study.url.dto.UrlDto.Response.FindList;
 import foo.study.url.dto.UrlDto.Response.FindOne;
+import foo.study.url.dto.UrlDto.Response.Select;
 import foo.study.url.dto.ValidationSequence;
 import foo.study.url.service.UrlService;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,17 +47,18 @@ public class UrlController {
             .build();
     }
 
-    @GetMapping("/urls")
-    public Response.FindList<String> findAll() {
-        return FindList.<String>builder()
+    @GetMapping("/select")
+    public Response.FindList<Select> findAll() {
+        return FindList.<Select>builder()
             .list(urlService.findAll()).build();
     }
 
     @GetMapping("/forward")
-    public void redirect(@RequestParam(name = "shortenUrl") String shortenUrl,
-        HttpServletResponse response) throws IOException {
+    public ResponseEntity<?> redirect(@RequestParam(name = "shortenUrl") String shortenUrl) throws URISyntaxException {
         String originalUrl = urlService.findOriginalUrlByShortedUrl(shortenUrl);
-        log.info("originalUrl {}", originalUrl);
-        response.sendRedirect(originalUrl);
+        URI redirectUri = new URI(originalUrl);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setLocation(redirectUri);
+        return new ResponseEntity<>(httpHeaders, HttpStatus.MOVED_PERMANENTLY);
     }
 }

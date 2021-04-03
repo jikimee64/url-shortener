@@ -1,7 +1,10 @@
 package foo.study.url.domain.Entity;
 
+import foo.study.url.domain.ReqInfo;
+import foo.study.url.domain.ShortenUrl;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,15 +25,23 @@ public class Log {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "access_ip")
-    private String accessIp;
+    @Embedded
+    private ReqInfo reqInfo;
+
+    @Column(name = "original_url")
+    private String originalUrl;
+
+    @Embedded
+    private ShortenUrl shortenUrl;
 
     @Column(name = "request_time")
-    private LocalDateTime requestTime;
+    private String requestTime;
 
     @Builder
-    public Log(String accessIp, LocalDateTime requestTime){
-        this.accessIp = accessIp;
+    public Log(ReqInfo reqInfo, String originalUrl, ShortenUrl shortenUrl, String requestTime) {
+        this.reqInfo = reqInfo;
+        this.originalUrl = originalUrl;
+        this.shortenUrl = shortenUrl;
         this.requestTime = requestTime;
     }
 

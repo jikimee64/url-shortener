@@ -7,7 +7,10 @@ import javax.persistence.Embeddable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@Getter
 @Embeddable
 @NoArgsConstructor
 public class ShortenUrl {
@@ -17,12 +20,16 @@ public class ShortenUrl {
     @Column(name = "shorten_url")
     private String shortenUrl;
 
-    @Builder
     public ShortenUrl(String shortenUrl){
         this.shortenUrl = Objects.requireNonNull(shortenUrl);
     }
 
     public String get(){
         return BASE_URL + this.shortenUrl;
+    }
+
+    public void filter(String shortenUrl){
+        log.info("url filter {}", shortenUrl.substring(15));
+        this.shortenUrl = shortenUrl.substring(15);
     }
 }
