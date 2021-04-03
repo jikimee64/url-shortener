@@ -1,4 +1,4 @@
-package foo.study.url.domain;
+package foo.study.url.domain.Entity;
 
 import java.time.LocalDateTime;
 import javax.persistence.Column;

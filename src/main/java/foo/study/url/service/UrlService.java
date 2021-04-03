@@ -1,42 +1,61 @@
 package foo.study.url.service;
 
+import foo.study.url.domain.Entity.ShortUrl;
+import foo.study.url.domain.Entity.Url;
 import foo.study.url.domain.ShortenUrl;
-import foo.study.url.domain.Url;
-import foo.study.url.dto.UrlDto.Response;
+import foo.study.url.exception.UrlNotFoundException;
+import foo.study.url.repository.ShortUrlRepository;
 import foo.study.url.repository.UrlRepository;
 import foo.study.url.utils.RandomSupplier;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class UrlService {
 
+    private UrlRepository urlRepository;
+    private ShortUrlRepository shortUrlRepository;
 
-    private final UrlRepository urlRepository;
+    public UrlService(UrlRepository urlRepository,
+        ShortUrlRepository shortUrlRepository) {
+        this.urlRepository = urlRepository;
+        this.shortUrlRepository = shortUrlRepository;
+    }
 
-    public String save(Url url){
+    public String save(Url url) {
+
         RandomSupplier randomSupplier = new RandomSupplier();
 
-        ShortenUrl shortenUrl = ShortenUrl.builder()
+        final ShortenUrl shortenUrl = ShortenUrl.builder()
             .shortenUrl(randomSupplier.get())
             .build();
 
-        Url save = Url.builder()
-            .originalUrl(url.getOriginalUrl())
-            .shortenUrl(shortenUrl)
-            .build();
+        ShortUrl entity = new ShortUrl(shortenUrl);
 
-        urlRepository.save(save);
-
+        urlRepository.findByOriginalUrl(url.getOriginalUrl())
+            .ifPresentOrElse(
+                value -> {
+                    entity.setUrl(value);
+                    shortUrlRepository.save(entity);
+                },
+                () -> {
+                    url.setShortUrl(entity);
+                    urlRepository.save(url);
+                }
+            );
         return shortenUrl.get();
     }
 
-    public List<String> findAll(){
+    public List<String> findAll() {
+        return null;
+    }
 
-        return urlRepository.findAll();
+    public String findOriginalUrlByShortedUrl(String shortedUrl) {
+        Url url = urlRepository.findOriginalUrlByShortenUrl(shortedUrl)
+            .orElseThrow(() -> new UrlNotFoundException("저장된 원본 URL이 없습니다."));
+        return url.getOriginalUrl();
     }
 
 }

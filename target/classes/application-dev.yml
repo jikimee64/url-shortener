@@ -1,9 +1,10 @@
 spring:
-  profiles:
-    active: dev
+  config:
+    activate:
+      on-profile: dev
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:tcp://localhost/~/moon
+    url: jdbc:h2:tcp://localhost/~/foo
     username: sa
     password:
 
@@ -20,7 +21,7 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-    root: debug
+    root: info
 
 server:
   port: 8080
