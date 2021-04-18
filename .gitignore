@@ -177,5 +177,5 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij,windows
 
 ### Custom ###
-
-
+url.iml
+.idea/**

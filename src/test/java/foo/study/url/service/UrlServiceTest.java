@@ -1,79 +1,92 @@
 package foo.study.url.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import foo.study.url.repository.UrlRepository;
-import foo.study.url.repository.UrlRepositoryImpl;
+import foo.study.url.domain.Entity.Url;
+import foo.study.url.dto.UrlDto.Response.Select;
+import foo.study.url.dto.UserInfo;
+import foo.study.url.exception.UrlNotFoundException;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import org.junit.jupiter.api.BeforeAll;
+import javax.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@Transactional
+@SpringBootTest
 class UrlServiceTest {
 
-    private static UrlRepository urlRepository;
-    private static UrlService urlService;
-    private static ConcurrentHashMap<String, String> urlLists;
+    @Autowired
+    private UrlService urlService;
 
-    @BeforeAll
-    public static void init(){
-        urlLists = new ConcurrentHashMap<>();
-        urlRepository = new UrlRepositoryImpl(urlLists);
-        urlService = new UrlService(urlRepository);
+    @Test
+    @DisplayName("단축 url 저장 후 반환")
+    void save() {
+        final String url = "http://www.naver.com";
+        final int SHORTED_URL_LENGTH = 21;
+
+        Url entity = new Url(url);
+        String save = urlService.save(entity);
+        assertThat(save.length()).isEqualTo(SHORTED_URL_LENGTH);
+
     }
 
-    @DisplayName("url 저장 후 shortedUrl 반환")
     @Test
-    public void save(){
-        String url = "https://www.google.com";
-        String shortedUrl = urlService.save(url);
+    @DisplayName("전체 url 조회")
+    void find_url() {
 
-        assertNotNull(shortedUrl);
-        assertThat(shortedUrl.length()).isEqualTo(5);
-    }
+        final String url = "http://www.naver.com";
+        final String url2 = "http://www.nate.com";
+        final int LIST_SIZE = 2;
 
-    @DisplayName("같은 url 전송시 같은 shortenUrl 반환")
-    @Test
-    public void same_url(){
-        String url = "https://www.google.com";
-        String shortedUrl = urlService.save(url);
+        UserInfo userInfo = new UserInfo("0.0.0.0");
+        Url entity = new Url(url);
+        Url entity2 = new Url(url2);
+        String shortedUrl = urlService.save(entity);
+        String shortedUrl2 = urlService.save(entity2);
 
-        String url2 = "https://www.google.com";
-        String shortedUrl2 = urlService.save(url2);
+        urlService.findOriginalUrlByShortedUrl(shortedUrl, userInfo);
+        urlService.findOriginalUrlByShortedUrl(shortedUrl2, userInfo);
+
+        List<Select> all = urlService.findAll();
 
         assertAll(() -> {
-            assertNotNull(shortedUrl);
-            assertNotNull(shortedUrl2);
-            assertThat(shortedUrl.length()).isEqualTo(shortedUrl2.length());
+            assertThat(all.size()).isEqualTo(LIST_SIZE);
+            assertThat(all.get(0).getId()).isNotNull();
+            assertThat(all.get(0).getRequestTime()).isNotNull();
+            assertThat(all.get(0).getAccessIp()).isNotNull();
+            assertThat(all.get(0).getOriginalUrl()).isNotNull();
+            assertThat(all.get(0).getShortenUrl()).isNotNull();
         });
+
     }
 
-    @DisplayName("저장된 모든 URL 반환")
-    @Order(2)
     @Test
-    public void findAll(){
+    @DisplayName("단축 url를 이용하여 원본url을 구하기")
+    void find() {
+        final String url = "http://www.naver.com";
 
-        String url = "https://www.google.com";
-        String shortedUrl = urlService.save(url);
+        UserInfo userInfo = new UserInfo("0.0.0.0");
+        Url entity = new Url(url);
+        String shortedUrl = urlService.save(entity);
 
-        String url2 = "https://www.naver.com";
-        String shortedUrl2 = urlService.save(url2);
+        String originalUrl = urlService.findOriginalUrlByShortedUrl(shortedUrl, userInfo);
 
-        String url3 = "https://www.github.com";
-        String shortedUrl3 = urlService.save(url3);
+        assertThat(url).isEqualTo(originalUrl);
+    }
 
-        List<String> all = urlService.findAll();
+    @Test
+    @DisplayName("단축 url를 이용하여 원본url을 구할시 존재하지 않을때 에러 발생")
+    void notFindUrl() {
+        UserInfo userInfo = new UserInfo("0.0.0.0");
+        final String shortedUrl = "https://foo.kr/wwr0y3";
 
-        assertAll(() -> {
-            assertNotNull(shortedUrl);
-            assertNotNull(shortedUrl2);
-            assertNotNull(shortedUrl3);
-            assertThat(all.size()).isEqualTo(3);
+        assertThrows(UrlNotFoundException.class, () -> {
+            urlService.findOriginalUrlByShortedUrl(shortedUrl, userInfo);
         });
-
     }
 
 }
