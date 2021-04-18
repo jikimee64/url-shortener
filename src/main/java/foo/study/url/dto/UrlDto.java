@@ -50,7 +50,7 @@ public class UrlDto {
                 return UrlDto.Response.Select.builder()
                     .id(log.getId())
                     .requestTime(log.getRequestTime())
-                    .accessIp(log.getReqInfo().getAccessIp())
+                    .accessIp(log.getAccessIp())
                     .originalUrl(log.getOriginalUrl())
                     .shortenUrl(log.getShortenUrl())
                     .build();

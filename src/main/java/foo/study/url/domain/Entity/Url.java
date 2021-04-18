@@ -4,6 +4,8 @@ import foo.study.url.domain.ShortenUrl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -25,9 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "url")
+@AttributeOverrides({
+    @AttributeOverride(name = "createdDateTime", column = @Column(name = "CREATED_DATETIME")),
+    @AttributeOverride(name = "updatedDateTime", column = @Column(name = "UPDATED_DATETIME"))
+})
+@Table(name = "tb_url")
 @ToString(exclude = "shortUrl")
-public class Url {
+public class Url extends BaseTimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

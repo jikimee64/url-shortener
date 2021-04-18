@@ -4,9 +4,9 @@ import foo.study.url.domain.DateType;
 import foo.study.url.domain.Entity.Log;
 import foo.study.url.domain.Entity.ShortUrl;
 import foo.study.url.domain.Entity.Url;
-import foo.study.url.domain.ReqInfo;
 import foo.study.url.domain.ShortenUrl;
 import foo.study.url.dto.UrlDto.Response.Select;
+import foo.study.url.dto.UserInfo;
 import foo.study.url.exception.UrlNotFoundException;
 import foo.study.url.repository.LogRepository;
 import foo.study.url.repository.ShortUrlRepository;
@@ -34,12 +34,11 @@ public class UrlService {
 
     public String save(Url url) {
 
-        RandomSupplier randomSupplier = new RandomSupplier();
+        String originUrl = url.getOriginalUrl();
 
-        final ShortenUrl shortenUrl = new ShortenUrl(randomSupplier.get());
+        RandomSupplier randomSupplier = new RandomSupplier(shortUrlRepository);
 
-        //생성된 url 중복 검사
-        checkDuplicate(shortenUrl, url);
+        final ShortenUrl shortenUrl = new ShortenUrl(randomSupplier.apply(originUrl));
 
         ShortUrl entity = new ShortUrl(shortenUrl.get());
 
@@ -47,7 +46,7 @@ public class UrlService {
          * url이 존재하면 short_url 테이블에만 insert
          * url이 존재하지 않으면 url, short_url 테이블에 insert
          */
-        urlRepository.findByOriginalUrl(url.getOriginalUrl())
+        urlRepository.findByOriginalUrl(originUrl)
             .ifPresentOrElse(
                 value -> {
                     entity.setUrl(value);
@@ -61,16 +60,12 @@ public class UrlService {
         return shortenUrl.get();
     }
 
-    public String findOriginalUrlByShortedUrl(String shortedUrl) {
+    public String findOriginalUrlByShortedUrl(String shortedUrl, UserInfo userInfo) {
         Url url = urlRepository.findOriginalUrlByShortenUrl(shortedUrl)
             .orElseThrow(() -> new UrlNotFoundException("저장된 원본 URL이 없습니다."));
 
-        // 로깅
-        ReqInfo reqInfo = new ReqInfo();
-        reqInfo.setAccessIp();
-
         Log log = Log.builder()
-            .reqInfo(reqInfo)
+            .accessIp(userInfo.getIp())
             .originalUrl(url.getOriginalUrl())
             .shortenUrl(shortedUrl)
             .requestTime(new DateType().getDateTime())
@@ -89,16 +84,6 @@ public class UrlService {
             .collect(Collectors.toList());
 
         return collect;
-    }
-
-    /**
-     * 단축된 URL이 중복이라면 save함수 재호출
-     */
-    private void checkDuplicate(ShortenUrl shortenUrl, Url url){
-        shortUrlRepository.findShortUrlByShortenUrl(shortenUrl.get())
-            .ifPresent(entity -> {
-                this.save(url);
-            });
     }
 
 }

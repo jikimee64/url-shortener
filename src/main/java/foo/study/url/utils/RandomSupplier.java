@@ -1,19 +1,52 @@
 package foo.study.url.utils;
 
-import java.util.Random;
-import java.util.function.Supplier;
+import foo.study.url.repository.ShortUrlRepository;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+import org.bitcoinj.core.Base58;
 
-public class RandomSupplier implements Supplier<String>{
+public class RandomSupplier implements Function<String, String> {
     private static final int URL_RANGE = 6;
-    private static final int LEFT_LIMIT = 48; // numeral '0'
-    private static final int RIGHT_LIMIT = 122; // numeral 'z'
+    private final ShortUrlRepository shortUrlRepository;
 
+    public RandomSupplier(ShortUrlRepository shortUrlRepository) {
+        this.shortUrlRepository = shortUrlRepository;
+    }
+
+    /**
+     * URL Hash Salt 적용하여 해시 -> 자르고 base64 적용해보기
+     */
     @Override
-    public String get() {
-        return new Random().ints(LEFT_LIMIT, RIGHT_LIMIT + 1)
-            .filter(i -> (i <= 57 || i >= 97))
-            .limit(URL_RANGE)
-            .collect(StringBuffer::new, StringBuffer::appendCodePoint, StringBuffer::append)
-            .toString();
+    public String apply(String originUrl) {
+        String url = generateUrl(originUrl);
+        while (!isUnique(url)){
+            url = generateUrl(originUrl);
+        }
+        return url;
+    }
+
+    private String generateUrl(String originUrl){
+        MessageDigest md;
+        try{
+            md = MessageDigest.getInstance("SHA-256");
+            String salt = SHA256Util.generateSalt();
+            md.update(salt.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Hash SHA-256 Error...");
+        }
+        return encodeBase64(md.digest(originUrl.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private String encodeBase64(byte[] source){
+        String encode = Base58.encode(source);
+        return encode.substring(0, URL_RANGE);
+    }
+
+    public boolean isUnique(String url){
+        return !shortUrlRepository.existsByShortenUrl(url);
     }
 }

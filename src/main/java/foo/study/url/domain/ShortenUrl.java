@@ -1,5 +1,6 @@
 package foo.study.url.domain;
 
+import foo.study.url.domain.Entity.Log;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -23,11 +24,7 @@ public class ShortenUrl {
     }
 
     public String get(){
-        return BASE_URL + this.shortenUrl;
+        return this.shortenUrl;
     }
 
-//    public void filter(String shortenUrl){
-//        log.info("url filter {}", shortenUrl.substring(15));
-//        this.shortenUrl = shortenUrl.substring(15);
-//    }
 }

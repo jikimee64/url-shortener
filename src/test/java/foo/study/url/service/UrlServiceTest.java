@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import foo.study.url.domain.Entity.Url;
 import foo.study.url.dto.UrlDto.Response.Select;
+import foo.study.url.dto.UserInfo;
 import foo.study.url.exception.UrlNotFoundException;
 import java.util.List;
 import javax.transaction.Transactional;
@@ -41,13 +42,14 @@ class UrlServiceTest {
         final String url2 = "http://www.nate.com";
         final int LIST_SIZE = 2;
 
+        UserInfo userInfo = new UserInfo("0.0.0.0");
         Url entity = new Url(url);
         Url entity2 = new Url(url2);
         String shortedUrl = urlService.save(entity);
         String shortedUrl2 = urlService.save(entity2);
 
-        urlService.findOriginalUrlByShortedUrl(shortedUrl);
-        urlService.findOriginalUrlByShortedUrl(shortedUrl2);
+        urlService.findOriginalUrlByShortedUrl(shortedUrl, userInfo);
+        urlService.findOriginalUrlByShortedUrl(shortedUrl2, userInfo);
 
         List<Select> all = urlService.findAll();
 
@@ -67,10 +69,11 @@ class UrlServiceTest {
     void find() {
         final String url = "http://www.naver.com";
 
+        UserInfo userInfo = new UserInfo("0.0.0.0");
         Url entity = new Url(url);
         String shortedUrl = urlService.save(entity);
 
-        String originalUrl = urlService.findOriginalUrlByShortedUrl(shortedUrl);
+        String originalUrl = urlService.findOriginalUrlByShortedUrl(shortedUrl, userInfo);
 
         assertThat(url).isEqualTo(originalUrl);
     }
@@ -78,10 +81,11 @@ class UrlServiceTest {
     @Test
     @DisplayName("단축 url를 이용하여 원본url을 구할시 존재하지 않을때 에러 발생")
     void notFindUrl() {
+        UserInfo userInfo = new UserInfo("0.0.0.0");
         final String shortedUrl = "https://foo.kr/wwr0y3";
 
         assertThrows(UrlNotFoundException.class, () -> {
-            urlService.findOriginalUrlByShortedUrl(shortedUrl);
+            urlService.findOriginalUrlByShortedUrl(shortedUrl, userInfo);
         });
     }
 

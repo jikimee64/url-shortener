@@ -1,11 +1,13 @@
 package foo.study.url.controller;
 
+import foo.study.url.aop.UserInfoRecord;
 import foo.study.url.dto.UrlDto;
 import foo.study.url.dto.UrlDto.Request;
 import foo.study.url.dto.UrlDto.Response;
 import foo.study.url.dto.UrlDto.Response.FindList;
 import foo.study.url.dto.UrlDto.Response.FindOne;
 import foo.study.url.dto.UrlDto.Response.Select;
+import foo.study.url.dto.UserInfo;
 import foo.study.url.dto.ValidationSequence;
 import foo.study.url.service.UrlService;
 import java.net.URI;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,9 +52,13 @@ public class UrlController {
             .list(urlService.findAll()).build();
     }
 
-    @GetMapping("/forward")
-    public ResponseEntity<?> redirect(@RequestParam(name = "shortenUrl") String shortenUrl) throws URISyntaxException {
-        String originalUrl = urlService.findOriginalUrlByShortedUrl(shortenUrl);
+    @GetMapping("/{shortenUrl}")
+    public ResponseEntity<?> redirect( @UserInfoRecord UserInfo userInfo,
+        @PathVariable(name = "shortenUrl") String shortenUrl) throws URISyntaxException {
+
+        log.info("userInfo {} ", userInfo);
+
+        String originalUrl = urlService.findOriginalUrlByShortedUrl(shortenUrl, userInfo);
         URI redirectUri = new URI(originalUrl);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setLocation(redirectUri);
